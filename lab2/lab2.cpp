@@ -4,11 +4,27 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <ctime>
 #include <limits>
 #include <string>
 #include <thread>
+#include <map>
 using namespace std;
 
+void logMessage(std::string message) {
+    std::ofstream logFile("log.txt", std::ios::app); // Открываем файл для добавления
+    if (logFile.is_open()) {
+        // Получаем текущее время
+        std::time_t now = std::time(nullptr);
+        char buffer[26];
+        ctime_s(buffer, sizeof(buffer), &now); // Используем ctime_s
+        logFile << buffer << ": " << message << std::endl; // Записываем сообщение с меткой времени
+        logFile.close();
+    }
+    else {
+        std::cerr << "Unable to open log file!" << std::endl;
+    }
+}
 bool isInteger(const string& s) {
     istringstream iss(s);
     int num;
@@ -31,8 +47,8 @@ int getChoose() {
         cout << "8. Filter\n";
         cout << "9. Delete\n";
         cout << "0. Exit\n";
-        cin >> input;
-
+        getline(cin, input);
+        logMessage(input);
         if (isInteger(input)) {
             stringstream ss(input);
             ss >> choose;
@@ -62,7 +78,8 @@ int check_int(int ch, int EntNum) {
         else if (ch == 5) {
             cout << "Enter number of efficiency from 0 to 100" << endl;
         }
-        cin >> input1;
+        getline(cin, input1);
+        logMessage(input1);
         if (isInteger(input1)) {
             stringstream ss(input1);
             ss >> entLen;
@@ -83,7 +100,7 @@ int check_int(int ch, int EntNum) {
                 }
             }
             else {
-                if (entLen > 0 && entLen < EntNum) {
+                if (entLen > 0 && entLen <= EntNum) {
                     return entLen;
                 }
                 else if (entLen <= 0) {
@@ -123,7 +140,8 @@ bool check_bool(int ch) {
             cout << "Enter + (plus) if you want to add one working factory. Enter - (minus) if you want to remove one working factory\n";
         }
         if (ch != 0) {
-            cin >> input1;
+            getline(cin, input1);
+            logMessage(input1);
         }
         if (ch == 1 || ch == 0) {
             if (input1 == "true" || input1 == "True" || input1 == "T" || input1 == "t") {
@@ -154,114 +172,89 @@ bool check_bool(int ch) {
 
     }
 }
-void createPipe(vector<pipe>& Pipes) {
-    char T;
+void createPipe(map<int, pipe>& Pipes, int& i) {
+    string T;
     cout << "Do you want to create your own pipe? [Y/N]\n";
-    cin >> T;
-    if (T == 'Y' || T == 'y') {
+    getline(cin, T);
+    logMessage(T);
+    if (T == "Y" || T == "y") {
         string entName;
         int entLen;
         int entDia;
         bool entRep;
         cout << "Enter a name" << endl;
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
         getline(cin, entName);
+        logMessage(entName);
         entLen = check_int(1, 0);
         entDia = check_int(2, 0);
         entRep = check_bool(1);
-        Pipes.push_back(pipe(entName, entLen, entDia, entRep));
+        Pipes[i] = pipe(entName, entLen, entDia, entRep);
+        i++;
     }
     else {
-        Pipes.push_back(pipe());
+        Pipes[i] = pipe();
+        i++;
     }
 
 }
-void createCs(vector<cs>& Css) {
-    char T;
+void createCs(map<int, cs>& Css, int& i) {
+    string T;
     cout << "Do you want to create your own cs? [Y/N]\n";
-    cin >> T;
-    if (T == 'Y' || T == 'y') {
+    getline(cin, T);
+    logMessage(T);
+    if (T == "Y" || T == "y") {
         string entName;
         int entNum;
         int entWork;
         int entEff;
         cout << "Enter a name" << endl;
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
         getline(cin, entName);
+        logMessage(entName);
         entNum = check_int(3, 0);
         entWork = check_int(4, entNum);
         entEff = check_int(5, 0);
-        Css.push_back(cs(entName, entNum, entWork, entEff));
+        Css[i] = cs(entName, entNum, entWork, entEff);
+        i++;
     }
     else {
-        Css.push_back(cs());
+        Css[i] = cs();
+        i++;
     }
 
 }
-void showPipe(const vector<pipe> Pipes) {
-    if (Pipes.size() > 0) {
+void showPipe(map<int,pipe>& Pipes) {
+    if (!Pipes.empty()) {
         cout << "Your's pipes:" << endl;
-        for (int i = 0; i < Pipes.size(); i++) {
-            cout << "Pipe id = " << i + 1 << endl;
-            cout << "Your pipe's name: " << Pipes[i].GetName() << "\n";
-            cout << "Your pipe's length: " << Pipes[i].GetLength() << "\n";
-            cout << "Your pipe's diameter: " << Pipes[i].GetDiameter() << "\n";
-            if (Pipes[i].GetInRepair() == 1) {
-                cout << "Is your pipe in repair: " << "true" << "\n";
-            }
-            else {
-                cout << "Is your pipe in repair: " << "false" << "\n";
-            }
-
-            cout << "\n";
+        for (const auto& pipe : Pipes) {
+            cout << "Pipe id = " << pipe.first << endl;
+            cout << pipe.second << endl;
         }
     }
     else {
         cout << "You haven't created any pipes yet\n";
     }
 }
-void showCs(const vector<cs> Css) {
+void showCs(const map<int, cs> Css) {
     if (Css.size() > 0) {
         cout << "Your's css:" << endl;
-        for (int i = 0; i < Css.size(); i++) {
-            cout << "Cs id = " << i + 1 << endl;
-            cout << "Your cs's name: " << Css[i].GetName() << "\n";
-            cout << "Your cs's number of factories: " << Css[i].GetNumFac() << "\n";
-            cout << "Your cs's number of working factories: " << Css[i].GetNumWorkFac() << "\n";
-            cout << "Your cs's efficiency: " << Css[i].GetEff() << "\n";
-            cout << "\n";
+        for (auto& cs : Css) {
+            cout << "Cs id = " << cs.first << endl;
+            cout << cs.second << endl;
         }
     }
     else {
         cout << "You haven't created any css yet\n";
     }
 }
-void showOnePipe(pipe Pipe) {
-    cout << "Your pipe's name: " << Pipe.GetName() << "\n";
-    cout << "Your pipe's length: " << Pipe.GetLength() << "\n";
-    cout << "Your pipe's diameter: " << Pipe.GetDiameter() << "\n";
-    if (Pipe.GetInRepair() == 1) {
-        cout << "Is your pipe in repair: " << "true" << "\n";
-    }
-    else {
-        cout << "Is your pipe in repair: " << "false" << "\n";
-    }
-    cout << "\n";
-}
-void showOneCs(cs Cs) {
-    cout << "Your cs's name: " << Cs.GetName() << "\n";
-    cout << "Your cs's number of factories: " << Cs.GetNumFac() << "\n";
-    cout << "Your cs's number of working factories: " << Cs.GetNumWorkFac() << "\n";
-    cout << "Your cs's efficiency: " << Cs.GetEff() << "\n";
-    cout << "\n";
-}
-void editPipe(vector<pipe>& Pipes) {
+void editPipe(map<int, pipe>& Pipes) {
+    showPipe(Pipes);
     string A;
     string num;
     int a;
     while (true) {
         cout << "Enter the number of pipe, you want to redact (from 1 to inf)" << endl;
-        cin >> num;
+        getline(cin, num);
+        logMessage(num);
         if (isInteger(num)) {
             a = stoi(num);
             break;
@@ -272,22 +265,24 @@ void editPipe(vector<pipe>& Pipes) {
     }
     bool T;
     T = check_bool(1);
+    cout << a << endl;
     if (Pipes.size() >= a) {
-        Pipes[a - 1].SetInRepair(T);
+        Pipes[a].SetInRepair(T);
     }
     else {
-        cout << "Pipe with this number doesn't exsist";
+        cout << "Pipe with this number doesn't exsist"<<endl;
     }
     showPipe(Pipes);
 }
-void editCs(vector<cs>& Css) {
+void editCs(map<int, cs>& Css) {
+    showCs(Css);
     bool A;
     string num;
     int a;
     string T;
     while (true) {
         cout << "Enter the number of cs, you want to redact (from 1 to inf)" << endl;
-        cin >> num;
+        getline(cin, num);
         if (isInteger(num)) {
             a = stoi(num);
             break;
@@ -307,13 +302,14 @@ void editCs(vector<cs>& Css) {
         }
     }
     else {
-        cout << "Cs with this number doesn't exsist";
+        cout << "Cs with this number doesn't exsist"<<endl;
     }
 }
-void write_file(vector<pipe> Pipes, vector<cs> Css) {
+void write_file(map<int, pipe> Pipes, map<int, cs> Css) {
     string f;
     cout << "Enter the name of file, that you want save your data" << endl;
-    cin >> f;
+    getline(cin, f);
+    logMessage(f);
     ofstream out;
     if (f.length() < 4 || f.substr(f.length() - 4) != ".txt") {
         f += ".txt"; // if not ".txt", we add it to the end
@@ -323,12 +319,12 @@ void write_file(vector<pipe> Pipes, vector<cs> Css) {
     {
         if (Pipes.size() > 0) {
             out << "==PIPES==" << endl;
-            for (int i = 0; i < Pipes.size(); i++) {
-                out << "Pipe id: " << i << endl;
-                out << "Your pipe's name: " << Pipes[i].GetName() << "\n";
-                out << "Your pipe's length: " << Pipes[i].GetLength() << "\n";
-                out << "Your pipe's diameter: " << Pipes[i].GetDiameter() << "\n";
-                out << "Is your pipe in repair: " << Pipes[i].GetInRepair() << "\n";
+            for (const auto& pipe : Pipes) {
+                out << "Pipe id: " << pipe.first << endl;
+                out << "Your pipe's name: " << pipe.second.GetName() << "\n";
+                out << "Your pipe's length: " << pipe.second.GetLength() << "\n";
+                out << "Your pipe's diameter: " << pipe.second.GetDiameter() << "\n";
+                out << "Is your pipe in repair: " << pipe.second.GetInRepair() << "\n";
                 out << "\n";
             }
         }
@@ -337,12 +333,12 @@ void write_file(vector<pipe> Pipes, vector<cs> Css) {
         }
         if (Css.size() > 0) {
             out << "==CSS==" << endl;
-            for (int i = 0; i < Css.size(); i++) {
-                out << "Cs id: " << i << endl;
-                out << "Your cs's name: " << Css[i].GetName() << "\n";
-                out << "Your cs's number of factories: " << Css[i].GetNumFac() << "\n";
-                out << "Your cs's number of working factories: " << Css[i].GetNumWorkFac() << "\n";
-                out << "Your cs's efficiency: " << Css[i].GetEff() << "\n";
+            for (const auto& cs : Css) {
+                out << "Cs id: " << cs.first << endl;
+                out << "Your cs's name: " << cs.second.GetName() << "\n";
+                out << "Your cs's number of factories: " << cs.second.GetNumFac() << "\n";
+                out << "Your cs's number of working factories: " << cs.second.GetNumWorkFac() << "\n";
+                out << "Your cs's efficiency: " << cs.second.GetEff() << "\n";
                 out << "\n";
             }
         }
@@ -353,10 +349,11 @@ void write_file(vector<pipe> Pipes, vector<cs> Css) {
     out.close();
     cout << "File has been written\n";
 }
-void read_file(vector<pipe>& Pipes, vector<cs>& Css) {
+void read_file(map<int, pipe>& Pipes, map<int, cs>& Css,int& i,int& ic) {
     string f;
     cout << "Enter the name of file, that you want read data from" << endl;
-    cin >> f;
+    getline(cin, f);
+    logMessage(f);
     if (f.length() < 4 || f.substr(f.length() - 4) != ".txt") {
         f += ".txt"; // if not ".txt", we add it to the end
     }
@@ -370,8 +367,8 @@ void read_file(vector<pipe>& Pipes, vector<cs>& Css) {
         bool A;
         int Num3;
         int Num4;
-        int idP;
-        int idC;
+        int idP=0;
+        int idC=0;
         int Num5;
         int numOfLine = 0;
         bool CheckPipeOrCs;
@@ -406,13 +403,8 @@ void read_file(vector<pipe>& Pipes, vector<cs>& Css) {
                         else if (value == "0") {
                             A = false;
                         }
-                        if (idP >= 0 && idP < Pipes.size()) {
-                            Pipes[idP] = pipe(name1, Num, Num2, A);
+                        Pipes[idP] = pipe(name1, Num, Num2, A);
 
-                        }
-                        else if (idP == Pipes.size()) {
-                            Pipes.push_back(pipe(name1, Num, Num2, A));
-                        }
                         numOfLine = 0;
                     }
                 }
@@ -431,28 +423,26 @@ void read_file(vector<pipe>& Pipes, vector<cs>& Css) {
                     }
                     if (numOfLine == 7) {
                         Num5 = stoi(value);
-                        if (idC >= 0 && idC < Css.size()) {
-                            Css[idC] = cs(name2, Num3, Num4, Num5);
-                        }
-                        else if (idC == Css.size()) {
-                            Css.push_back(cs(name2, Num3, Num4, Num5));
-                        }
+                        Css[idC] = cs(name2, Num3, Num4, Num5);
                         numOfLine = 1;
                     }
                 }
             }
         }
+        i = idP;
+        ic = idC;
         in.close();
     }
 }
-void filt(vector<pipe>& Pipes, vector<cs>& Css) {
+void filt(map<int, pipe>& Pipes, map<int, cs>& Css) {
     string ch;
     string h;
     int choose;
     bool A = false;
     while (true) {
         cout << "Enter what objects you want to filter: pipes or css (p/c)" << endl;
-        cin >> ch;
+        getline(cin, ch);
+        logMessage(ch);
         if (ch == "p" || ch == "P" || ch == "c" || ch == "C") {
             A = true;
             break;
@@ -464,7 +454,8 @@ void filt(vector<pipe>& Pipes, vector<cs>& Css) {
     if (ch == "p" || ch == "P") {
         while (true) {
             cout << "Enter what parameter you want to filter: name or repair" << endl;
-            cin >> h;
+            getline(cin, h);
+            logMessage(h);
             if (h == "n" || h == "N" || h == "name" || h == "Name") {
                 choose = 0;
                 break;
@@ -482,19 +473,21 @@ void filt(vector<pipe>& Pipes, vector<cs>& Css) {
             string n;
             string a;
             string h;
-            cin >> n;
+            getline(cin, n);
             for (int i = 0; i < Pipes.size(); i++) {
-                if (Pipes[i].GetName() == n) {
-                    showOnePipe(Pipes[i]);
+                if (Pipes[i].GetName().find(n) != std::string::npos) {
+                    cout<<(Pipes[i])<<endl;
                 }
             }
             cout << "Do you want to redact these pipes? (t/f)" << endl;
-            cin >> a;
-            cout << "Enter a new name" << endl;
-            cin >> h;
+            getline(cin, a);
+            logMessage(a);
             if (a == "t" || a == "T" || a == "True" || a == "true") {
+                cout << "Enter a new name" << endl;
+                getline(cin, h);
+                logMessage(h);
                 for (int i = 0; i < Pipes.size(); i++) {
-                    if (Pipes[i].GetName() == n) {
+                    if (Pipes[i].GetName().find(n) != std::string::npos) {
                         Pipes[i].SetName(h);
                     }
                 }
@@ -508,7 +501,8 @@ void filt(vector<pipe>& Pipes, vector<cs>& Css) {
             string h;
             bool A;
             bool B;
-            cin >> n;
+            getline(cin, n);
+            logMessage(n);
             if (n == "t" || n == "T" || n == "true" || n == "True" || n == "1") {
                 A = true;
             }
@@ -517,13 +511,12 @@ void filt(vector<pipe>& Pipes, vector<cs>& Css) {
             }
             for (int i = 0; i < Pipes.size(); i++) {
                 if ((Pipes[i].GetInRepair() && A) || (!Pipes[i].GetInRepair() && !A)) {
-                    showOnePipe(Pipes[i]);
+                    cout << (Pipes[i]) << endl;
                 }
             }
             cout << "Do you want to redact these pipes? (t/f)" << endl;
-            cin >> a;
-            cout << "Enter a new inRepair parameter" << endl;
-            cin >> h;
+            getline(cin, a);
+            logMessage(a);
             if (h == "t" || h == "T" || h == "True" || h == "true") {
                 B = true;
             }
@@ -531,6 +524,9 @@ void filt(vector<pipe>& Pipes, vector<cs>& Css) {
                 B = false;
             }
             if (a == "t" || a == "T" || a == "True" || a == "true") {
+                cout << "Enter a new inRepair parameter" << endl;
+                getline(cin, h);
+                logMessage(h);
                 for (int i = 0; i < Pipes.size(); i++) {
                     if ((Pipes[i].GetInRepair() && A) || (!Pipes[i].GetInRepair() && !A)) {
                         Pipes[i].SetInRepair(B);
@@ -542,7 +538,8 @@ void filt(vector<pipe>& Pipes, vector<cs>& Css) {
     if (ch == "c" || ch == "C") {
         while (true) {
             cout << "Enter what parameter you want to filter: name or efficiency" << endl;
-            cin >> h;
+            getline(cin, h);
+            logMessage(h);
             if (h == "n" || h == "N" || h == "name" || h == "Name") {
                 choose = 2;
                 break;
@@ -560,19 +557,22 @@ void filt(vector<pipe>& Pipes, vector<cs>& Css) {
             string n;
             string a;
             string h;
-            cin >> n;
+            getline(cin, n);
+            logMessage(n);
             for (int i = 0; i < Css.size(); i++) {
-                if (Css[i].GetName() == n) {
-                    showOneCs(Css[i]);
+                if (Css[i].GetName().find(n) != std::string::npos) {
+                    cout << Css[i] << endl;
                 }
             }
             cout << "Do you want to redact these css? (t/f)" << endl;
-            cin >> a;
-            cout << "Enter a new name" << endl;
-            cin >> h;
+            getline(cin, a);
+            logMessage(a);
             if (a == "t" || a == "T" || a == "True" || a == "true") {
-                for (int i = 0; i < Pipes.size(); i++) {
-                    if (Css[i].GetName() == n) {
+                cout << "Enter a new name" << endl;
+                getline(cin, h);
+                logMessage(h);
+                for (int i = 0; i < Css.size(); i++) {
+                    if (Css[i].GetName().find(n) != std::string::npos) {
                         Css[i].SetName(h);
                     }
                 }
@@ -586,25 +586,30 @@ void filt(vector<pipe>& Pipes, vector<cs>& Css) {
             string h;
             int e;
             int ef;
-            cin >> n;
+            getline(cin, n);
+            logMessage(n);
             if (isInteger(n)) {
                 ef = stoi(n);
                 for (int i = 0; i < Css.size(); i++) {
                     if (Css[i].GetEff() == ef) {
-                        showOneCs(Css[i]);
+                        cout << Css[i] << endl;
                     }
                 }
                 cout << "Do you want to redact these css? (t/f)" << endl;
-                cin >> a;
-                cout << "Enter a new efficiency" << endl;
-                cin >> h;
-                if (isInteger(h)) {
-                    e = stoi(h);
-                    if (a == "t" || a == "T" || a == "True" || a == "true") {
-                        for (int i = 0; i < Pipes.size(); i++) {
+                getline(cin, a);
+                logMessage(a);
+                if (a == "t" || a == "T" || a == "True" || a == "true") {
+                    cout << "Enter a new efficiency" << endl;
+                    getline(cin, h);
+                    logMessage(h);
+                    if (isInteger(h)) {
+                        e = stoi(h);
+                        for (int i = 0; i < Css.size(); i++) {
                             if (Css[i].GetEff() == ef) {
                                 Css[i].SetEff(e);
+                                }
                             }
+
                         }
                     }
                 }
@@ -616,8 +621,7 @@ void filt(vector<pipe>& Pipes, vector<cs>& Css) {
         }
     }
 
-}
-void delPC(vector<pipe>& Pipes, vector<cs>& Css) {
+void delPC(map<int, pipe>& Pipes, map<int, cs>& Css) {
     string ch;
     string h;
     bool A;
@@ -627,7 +631,8 @@ void delPC(vector<pipe>& Pipes, vector<cs>& Css) {
     istringstream iss(input);
     while (true) {
         cout << "Enter what objects you want to delete: pipes or css (p/c)" << endl;
-        cin >> ch;
+        getline(cin, ch);
+        logMessage(ch);
         if (ch == "p" || ch == "P") {
             A = true;
             break;
@@ -641,8 +646,8 @@ void delPC(vector<pipe>& Pipes, vector<cs>& Css) {
         }
     }
 
-
     if (A) {
+
         showPipe(Pipes);
         cout << "Enter id's of pipes you want to delete (separated by a space)" << endl;
     }
@@ -650,8 +655,8 @@ void delPC(vector<pipe>& Pipes, vector<cs>& Css) {
         showCs(Css);
         cout << "Enter id's of css you want to delete (separated by a space)" << endl;
     }
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
     getline(cin, input);
+    logMessage(input);
     int pos = 0;
     string token;
     while ((pos = input.find(" ")) != string::npos) {
@@ -660,45 +665,54 @@ void delPC(vector<pipe>& Pipes, vector<cs>& Css) {
         input.erase(0, pos + 1);
     }
     numbers.push_back(stoi(input)); //Adding the last number
-
     if (numbers.size() != 0) {
         if (A) {
-            int z = 0;
-            for (int i = 0; i <= Pipes.size(); i++) {
-                if ((numbers[i] - z) <= Pipes.size()) {
-                    Pipes.erase(Pipes.begin() + (numbers[i] - 1 - z));
-                    z++;
+            if (Pipes.size() != 0) {
+                for (int i = 0; i <= Pipes.size(); i++) {
+                    if (Pipes.find(numbers[i]) != Pipes.end()) {
+                        Pipes.erase(numbers[i]);
+                    }
                 }
+            }
+            else {
+                cout << "You don't have pipes!!!" << endl;
             }
         }
         else {
-            int z = 0;
-            for (int i = 0; i <= Css.size(); ++i) {
-                if ((numbers[i] - z) <= Css.size()) {
-                    Css.erase(Css.begin() + (numbers[i] - 1 - z));
-                    z++;
+            if (Css.size() != 0) {
+                for (int i = 0; i <= Css.size() + 1; i++) {
+                    if ((numbers[i]) <= Css.size()) {
+                        Css.erase(numbers[i]);
+                    }
                 }
+            }
+            else {
+                cout << "You don't have css!!!" << endl;
             }
         }
     }
     else {
         cout << "Entered numbers are incorrect! Try again!!!" << endl;
     }
+    
 }
 
 int main() {
+    int i = 0;
+    int ic = 0;
+    logMessage("Program started");
     string line;
-    vector<pipe> Pipes;
-    vector<cs> Css;
+    map<int, pipe> Pipes;
+    map<int, cs> Css;
     while (true) {
         int choose = getChoose();
         switch (choose) {
         case 1: {
-            createPipe(Pipes);
+            createPipe(Pipes, i);
             break;
         }
         case 2:
-            createCs(Css);
+            createCs(Css, ic);
             break;
         case 3:
             showPipe(Pipes);
@@ -716,7 +730,7 @@ int main() {
             break;
         case 7:
         {
-            read_file(Pipes, Css);
+            read_file(Pipes, Css,i,ic);
             break;
         }
         case 8: {
@@ -728,9 +742,11 @@ int main() {
             break;
         }
         case 0:
+            logMessage("Program finished");
             return 0;
         }
     }
     return 0;
 }
+
 

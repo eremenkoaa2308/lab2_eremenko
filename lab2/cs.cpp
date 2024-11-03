@@ -1,6 +1,6 @@
 #include "cs.h"
 
-cs::cs(string n, int num, int numw, int e)
+cs::cs(std::string n, int num, int numw, int e)
 {
 	name = n;
 	numFac = num;
@@ -16,7 +16,7 @@ cs::cs()
 	eff = false;
 }
 
-string cs::GetName() const
+std::string cs::GetName() const
 {
 	return this->name;
 }
@@ -36,7 +36,7 @@ int cs::GetEff() const
 	return this->eff;
 }
 
-void cs::SetName(string st)
+void cs::SetName(std::string st)
 {
 	name = st;
 }
@@ -46,26 +46,30 @@ void cs::SetEff(int n)
 	eff = n;
 }
 
-bool cs::SetNumWorkFac(bool A)
-{
-	if (A) {
-		if ((numWorkFac + 1) > numFac) {
-			return false;
-		}
-		else {
-			numWorkFac++;
-			return true;
-		}
-	}
-	else {
-		if ((numWorkFac - 1) < 0) {
-			return false;
-		}
-		else {
-			numWorkFac = numWorkFac - 1;
-			return true;
-		}
-	}
+bool cs::SetNumWorkFac(bool A) {
+    if (A) {
+        if ((numWorkFac + 1) > numFac) {
+            return false; // Превышает максимальное количество
+        } else {
+            numWorkFac++; // Увеличиваем количество
+            return true;
+        }
+    } else {
+        if ((numWorkFac - 1) < 0) {
+            return false; // Минимальное количество не может быть меньше 0
+        } else {
+            numWorkFac--; // Уменьшаем количество
+            return true;
+        }
+    }
 }
 
 
+std::ostream& operator<<(std::ostream& os, const cs& c)
+{
+	os << "Your cs's name: " << c.GetName() << "\n";
+	os << "Your cs's number of factories: " << c.GetNumFac() << "\n";
+	os << "Your cs's number of working factories: " << c.GetNumWorkFac() << "\n";
+	os << "Your cs's efficiency: " << c.GetEff() << "\n";
+	return os;
+}

@@ -37,8 +37,7 @@ bool pipe::GetInRepair() const
     return inRepair;
 }
 
-void pipe::SetInRepair(bool s)
-{
+void pipe::SetInRepair(bool s){
     inRepair = s;
 }
 
@@ -47,3 +46,10 @@ void pipe::SetName(string st)
     name = st;
 }
 
+ostream& operator<<(ostream& os, const pipe& p) {
+    os << "Your pipe's name: " << p.GetName() << endl;
+    os << "Your pipe's length: " << p.GetLength() << endl;
+    os << "Your pipe's diameter: " << p.GetDiameter() << endl;
+    os << "Is your pipe in repair: " << (p.GetInRepair() ? "true" : "false") << endl;
+    return os;
+}
