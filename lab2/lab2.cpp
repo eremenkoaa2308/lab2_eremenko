@@ -11,18 +11,18 @@
 #include <map>
 using namespace std;
 
-void logMessage(std::string message) {
-    std::ofstream logFile("log.txt", std::ios::app); // Открываем файл для добавления
+void logMessage(string message) {
+    ofstream logFile("log.txt", ios::app); // Открываем файл для добавления
     if (logFile.is_open()) {
         // Получаем текущее время
-        std::time_t now = std::time(nullptr);
+        time_t now = time(nullptr);
         char buffer[26];
         ctime_s(buffer, sizeof(buffer), &now); // Используем ctime_s
-        logFile << buffer << ": " << message << std::endl; // Записываем сообщение с меткой времени
+        logFile << buffer << ": " << message << endl; // Записываем сообщение с меткой времени
         logFile.close();
     }
     else {
-        std::cerr << "Unable to open log file!" << std::endl;
+        cerr << "Unable to open log file!" << endl;
     }
 }
 bool isInteger(const string& s) {
@@ -453,7 +453,7 @@ void filt(map<int, pipe>& Pipes, map<int, cs>& Css) {
     }
     if (ch == "p" || ch == "P") {
         while (true) {
-            cout << "Enter what parameter you want to filter: name or repair" << endl;
+            cout << "Enter what parameter you want to filter: name or repair. or complex filter" << endl;
             getline(cin, h);
             logMessage(h);
             if (h == "n" || h == "N" || h == "name" || h == "Name") {
@@ -462,6 +462,10 @@ void filt(map<int, pipe>& Pipes, map<int, cs>& Css) {
             }
             else if (h == "r" || h == "R" || h == "repair" || h == "Repair") {
                 choose = 1;
+                break;
+            }
+            if (h == "c" || h == "C") {
+                choose = 11;
                 break;
             }
             else {
@@ -475,7 +479,7 @@ void filt(map<int, pipe>& Pipes, map<int, cs>& Css) {
             string h;
             getline(cin, n);
             for (int i = 0; i < Pipes.size(); i++) {
-                if (Pipes[i].GetName().find(n) != std::string::npos) {
+                if (Pipes[i].GetName().find(n) != string::npos) {
                     cout<<(Pipes[i])<<endl;
                 }
             }
@@ -487,7 +491,7 @@ void filt(map<int, pipe>& Pipes, map<int, cs>& Css) {
                 getline(cin, h);
                 logMessage(h);
                 for (int i = 0; i < Pipes.size(); i++) {
-                    if (Pipes[i].GetName().find(n) != std::string::npos) {
+                    if (Pipes[i].GetName().find(n) != string::npos) {
                         Pipes[i].SetName(h);
                     }
                 }
@@ -534,10 +538,66 @@ void filt(map<int, pipe>& Pipes, map<int, cs>& Css) {
                 }
             }
         }
+        if (choose == 11) {
+            string input;
+            vector<int> numbers;
+            string a;
+            showPipe(Pipes);
+            cout << "Enter numbers of pipes you want to filter (separating them with a space)" << endl;
+            getline(cin, input);
+            logMessage(input);
+            int pos = 0;
+            string token;
+            while ((pos = input.find(" ")) != string::npos) {
+                token = input.substr(0, pos);
+                numbers.push_back(stoi(token)); //Converting a substring to a number
+                input.erase(0, pos + 1);
+            }
+            numbers.push_back(stoi(input)); //Adding the last number
+            for (int i = 0; i < numbers.size(); i++) {
+                if (Pipes.find(numbers[i]) != Pipes.end()) {
+                    cout << "Pipe id: " << numbers[i] << endl;
+                    cout << Pipes[numbers[i]] << endl;
+                }
+            }
+            cout << "Do you want to redact them? (t/f)" << endl;
+            getline(cin, a);
+            logMessage(a);
+            string h;
+            string y;
+            if (a == "t" || a == "T") {
+                cout << "Enter a new name to these pipes or press enter to skip" << endl;
+                getline(cin, h);
+                if (h != " " && h!= "") {
+                    for (int i = 0; i < numbers.size(); i++) {
+                        if (Pipes.find(numbers[i]) != Pipes.end()) {
+                            Pipes[numbers[i]].SetName(h);
+                        }
+                    }
+                }
+                cout << "Enter a new name repair parameter to these pipes or press enter to skip (t/f)" << endl;
+                getline(cin, y);
+                logMessage(y);
+                if (y!= " " && y != "") {
+                    for (int i = 0; i < numbers.size(); i++) {
+                        if (Pipes.find(numbers[i]) != Pipes.end()) {
+                            if (y == "t") {
+                                Pipes[numbers[i]].SetInRepair(true);
+                            }
+                            else if (y == "f") {
+                                Pipes[numbers[i]].SetInRepair(false);
+                            }
+
+                        }
+                    }
+                }
+            }
+
+        }
     }
     if (ch == "c" || ch == "C") {
         while (true) {
-            cout << "Enter what parameter you want to filter: name or efficiency" << endl;
+            cout << "Enter what parameter you want to filter: name or efficiency. Or complex filter" << endl;
             getline(cin, h);
             logMessage(h);
             if (h == "n" || h == "N" || h == "name" || h == "Name") {
@@ -546,6 +606,10 @@ void filt(map<int, pipe>& Pipes, map<int, cs>& Css) {
             }
             else if (h == "e" || h == "E" || h == "efficiency" || h == "Efficiency") {
                 choose = 3;
+                break;
+            }
+            else if (h == "c" || h == "C") {
+                choose = 22;
                 break;
             }
             else {
@@ -560,7 +624,7 @@ void filt(map<int, pipe>& Pipes, map<int, cs>& Css) {
             getline(cin, n);
             logMessage(n);
             for (int i = 0; i < Css.size(); i++) {
-                if (Css[i].GetName().find(n) != std::string::npos) {
+                if (Css[i].GetName().find(n) != string::npos) {
                     cout << Css[i] << endl;
                 }
             }
@@ -572,7 +636,7 @@ void filt(map<int, pipe>& Pipes, map<int, cs>& Css) {
                 getline(cin, h);
                 logMessage(h);
                 for (int i = 0; i < Css.size(); i++) {
-                    if (Css[i].GetName().find(n) != std::string::npos) {
+                    if (Css[i].GetName().find(n) != string::npos) {
                         Css[i].SetName(h);
                     }
                 }
@@ -618,8 +682,62 @@ void filt(map<int, pipe>& Pipes, map<int, cs>& Css) {
                 }
 
             }
+        if (choose == 22) {
+            string input;
+            vector<int> numbers;
+            showPipe(Pipes);
+            cout << "Enter numbers of css you want to filter (separating them with a space)" << endl;
+            getline(cin, input);
+            logMessage(input);
+            int pos = 0;
+            string token;
+            while ((pos = input.find(" ")) != string::npos) {
+                token = input.substr(0, pos);
+                numbers.push_back(stoi(token)); //Converting a substring to a number
+                input.erase(0, pos + 1);
+            }
+            numbers.push_back(stoi(input)); //Adding the last number
+            for (int i = 0; i <= numbers.size(); i++) {
+                if (Css.find(numbers[i]) != Css.end()) {
+                    cout << Css[numbers[i]];
+                }
+            }
+            cout << "Do you want to redact them?" << endl;
+            string a;
+            getline(cin, a);
+            logMessage(a);
+            string h;
+            string y;
+            int ia;
+            if (a == "t" || a == "T") {
+                cout << "Enter a new name to these css or press enter to skip" << endl;
+                getline(cin, h);
+                if (h != " " && h != "") {
+                    for (int i = 0; i <= numbers.size(); i++) {
+                        if (Css.find(numbers[i]) != Css.end()) {
+                            Css[numbers[i]].SetName(h);
+                        }
+                    }
+                }
+                cout << "Enter a new efficency parameter to these pipes or press enter to skip" << endl;
+                getline(cin, y);
+                logMessage(y);
+                if (y != " " && y != "") {
+                    for (int i = 0; i <= Css.size(); i++) {
+                        if (Css.find(numbers[i]) != Css.end()) {
+                            if (isInteger(y)) {
+                                ia = stoi(y);
+                                Css[numbers[i]].SetEff(ia);
+                            }
+
+                        }
+                    }
+                }
+            }
         }
     }
+}
+        
 
 void delPC(map<int, pipe>& Pipes, map<int, cs>& Css) {
     string ch;
